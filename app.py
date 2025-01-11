@@ -157,7 +157,7 @@ if uploaded_file:
     }
 
     for name, model in classifiers.items():
-        st.write(f"### Training {name}...")
+        st.write(f"### Training {name}")
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
 

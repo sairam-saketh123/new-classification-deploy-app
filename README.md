@@ -7,4 +7,6 @@
      
 3) The application includes features for data visualization, scaling, handling missing values, and encoding categorical variables, all designed with a modern, dark-themed UI for an enhanced 
    user experience.
+
+4) streamlit application url - https://automl-classification-data.streamlit.app/
 </p>

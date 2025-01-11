@@ -90,7 +90,7 @@ st.markdown(
 )
 
 # App Header
-st.title("Enhanced AutoML Classification Application")
+st.title("Enhanced Machine Learning Classification with AutoML")
 
 # File upload
 uploaded_file = st.file_uploader("Upload your dataset", type=['csv'])

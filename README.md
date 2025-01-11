@@ -1,1 +1,4 @@
-# new-classification-deploy-app
+This application aims to provide an automated machine learning (AutoML) solution for classification tasks. 
+The goal is to preprocess the given dataset, train multiple classifiers, and evaluate their performance using various metrics like accuracy and confusion matrices.
+The process involves handling missing values, encoding categorical features, splitting the data into training and testing sets, scaling features, and training different machine learning models such as Decision Tree, Random Forest, K-Nearest Neighbors (KNN), Logistic Regression, Naive Bayes, Gradient Boosting, Bagging, and Extra Trees.
+The end result will allow users to upload datasets, visualize the data, preprocess it for classification, train various models, and assess their performance, all within a streamlined and visually enhanced interface using Streamlit.

@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier, GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
@@ -233,8 +233,7 @@ classifiers = {
     "KNN": KNeighborsClassifier(),
     "Logistic Regression": LogisticRegression(random_state=42),
     "Naive Bayes": GaussianNB(),
-    "Gradient Boosting": GradientBoostingClassifier(n_estimators=100, random_state=42),
-    "Extra Trees": ExtraTreesClassifier(n_estimators=100, random_state=42)
+    "Gradient Boosting": GradientBoostingClassifier(n_estimators=100, random_state=42)
 }
 
 # File upload with error handling
@@ -299,7 +298,7 @@ if uploaded_file:
             st.pyplot(fig)
 
         # Preprocessing for Classification
-        st.write("### Preprocessing the data for classification...")
+        st.write("### Perform Model Training below")
         
         # Handle missing values with intelligent imputation
         for col in data.select_dtypes(include=np.number).columns:
@@ -310,7 +309,7 @@ if uploaded_file:
             le = LabelEncoder()
             data[col] = le.fit_transform(data[col])
 
-        target_column = st.selectbox("Select Target Column for Classification:", data.columns)
+        target_column = st.selectbox("## Select Target Column for Classification:", data.columns)
         if target_column:
             X = data.drop(columns=[target_column])  # Features
             y = data[target_column]  # Target
@@ -368,28 +367,11 @@ if uploaded_file:
                     st.pyplot(fig)  # Display the plot using the created figure
                     
                     # Classification Report in the form of table
-                    if name == "Decision Tree":
-                        st.write(f"### {name} Classification Report")
-                        clf_report_dict = classification_report(y_test, y_pred, output_dict=True)
-                        clf_report_df = pd.DataFrame(clf_report_dict).transpose()
-                        st.dataframe(clf_report_df)
-                    
-                    # Feature Importance - Random Forest
-                    if name == "Random Forest":
-                        st.write(f"### {name} Feature Importance")
-                        importances = model.feature_importances_
-                        feature_names = X.columns
-                        importances_df = pd.DataFrame({'Feature': feature_names, 'Importance': importances})
-                        st.bar_chart(importances_df.sort_values(by='Importance', ascending=False))
-
-                    # Feature Importance - Extra Trees
-                    if name == "Extra Trees":
-                        st.write(f"### {name} Feature Importance")
-                        importances = model.feature_importances_
-                        feature_names = X.columns
-                        importances_df = pd.DataFrame({'Feature': feature_names, 'Importance': importances})
-                        st.bar_chart(importances_df.sort_values(by='Importance', ascending=False))
-
+                    st.write(f"### {name} Classification Report")
+                    clf_report_dict = classification_report(y_test, y_pred, output_dict=True)
+                    clf_report_df = pd.DataFrame(clf_report_dict).transpose()
+                    st.dataframe(clf_report_df)
+                
                 # Display results in a table
                 results_df = pd.DataFrame(results)
                 st.write("### Classification Results:")

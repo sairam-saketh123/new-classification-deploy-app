@@ -237,138 +237,147 @@ classifiers = {
     "Extra Trees": ExtraTreesClassifier(n_estimators=100, random_state=42)
 }
 
-# File upload
+# File upload with error handling
 uploaded_file = st.file_uploader("Upload your dataset", type=['csv', 'xlsx'])
 
 if uploaded_file:
-    # Load the dataset
-    if uploaded_file.name.endswith('.csv'):
-        data = pd.read_csv(uploaded_file)
-    elif uploaded_file.name.endswith('.xlsx'):
-        data = pd.read_excel(uploaded_file)
-    
-    st.write("### Dataset Loaded:")
-    st.dataframe(data.head())
-    
-    # Display basic info
-    st.write("### Descriptive Statistics:")
-    st.dataframe(data.describe())
-    
-    # Data Visualization
-    st.write("### Data Visualizations:")
-    
-    # Histograms of numerical features
-    st.subheader("Histograms of Features")
-    num_features = data.select_dtypes(include=np.number).columns
-    fig, axes = plt.subplots(nrows=(len(num_features) + 1)//2, ncols=2, figsize=(16, 12))
-    axes = axes.flatten()
-    for i, col in enumerate(num_features):
-        sns.histplot(data[col], ax=axes[i], kde=True)
-        axes[i].set_title(f'Histogram of {col}')
-    plt.tight_layout()
-    st.pyplot(fig)
+    try:
+        # Load the dataset with error handling
+        if uploaded_file.name.endswith('.csv'):
+            data = pd.read_csv(uploaded_file)
+        elif uploaded_file.name.endswith('.xlsx'):
+            data = pd.read_excel(uploaded_file)
+        else:
+            raise ValueError("Unsupported file format. Please upload a CSV or Excel file.")
+        
+        if data.empty:
+            raise ValueError("The uploaded dataset is empty. Please upload a valid dataset.")
 
-    # Boxplot - User selects column
-    st.subheader("Box Plot")
-    box_column = st.selectbox("Select a numerical column for box plot:", data.select_dtypes(include=[np.number]).columns)
-    if box_column:
-        st.write(f"### Box Plot for {box_column}")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.boxplot(data=data, x=data[box_column], ax=ax, palette='Set3')
-        ax.set_title(f'Box Plot of {box_column}')
+        st.write("### Dataset Loaded:")
+        st.dataframe(data.head())
+        
+        # Display basic info
+        st.write("### Descriptive Statistics:")
+        st.dataframe(data.describe())
+        
+        # Data Visualization
+        st.write("### Data Visualizations:")
+        
+        # Histograms of numerical features
+        st.subheader("Histograms of Features")
+        num_features = data.select_dtypes(include=np.number).columns
+        fig, axes = plt.subplots(nrows=(len(num_features) + 1)//2, ncols=2, figsize=(16, 12))
+        axes = axes.flatten()
+        for i, col in enumerate(num_features):
+            sns.histplot(data[col], ax=axes[i], kde=True)
+            axes[i].set_title(f'Histogram of {col}')
+        plt.tight_layout()
         st.pyplot(fig)
 
-    # Bar Chart - User selects column
-    st.subheader("Bar Chart")
-    selected_bar_col = st.selectbox("Select a column for bar chart:", data.columns)
-    if selected_bar_col:
-        value_counts = data[selected_bar_col].value_counts()
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.barplot(x=value_counts.index, y=value_counts.values, ax=ax, palette='plasma')
-        for p in ax.patches:
-            ax.annotate(f'{p.get_height()}', (p.get_x() + p.get_width() / 2., p.get_height()),
-                        ha='center', va='bottom', size=12, color='black')
-        plt.title(f'Bar Chart of {selected_bar_col}')
-        plt.xticks(rotation=45)
-        st.pyplot(fig)
+        # Boxplot - User selects column
+        st.subheader("Box Plot")
+        box_column = st.selectbox("Select a numerical column for box plot:", data.select_dtypes(include=[np.number]).columns)
+        if box_column:
+            st.write(f"### Box Plot for {box_column}")
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.boxplot(data[box_column], ax=ax, palette='Set3')
+            ax.set_title(f'Box Plot of {box_column}')
+            st.pyplot(fig)
 
-    # Preprocessing for Classification
-    st.write("### Preprocessing the data for classification...")
-    
-    # Handle missing values
-    for col in data.select_dtypes(include=np.number).columns:
-        data[col].fillna(data[col].mean(), inplace=True)
+        # Bar Chart - User selects column
+        st.subheader("Bar Chart")
+        selected_bar_col = st.selectbox("Select a column for bar chart:", data.columns)
+        if selected_bar_col:
+            value_counts = data[selected_bar_col].value_counts()
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.barplot(x=value_counts.index, y=value_counts.values, ax=ax, palette='plasma')
+            for p in ax.patches:
+                ax.annotate(f'{p.get_height()}', (p.get_x() + p.get_width() / 2., p.get_height()),
+                            ha='center', va='bottom', size=12, color='black')
+            plt.title(f'Bar Chart of {selected_bar_col}')
+            plt.xticks(rotation=45)
+            st.pyplot(fig)
 
-    categorical_cols = data.select_dtypes(include=['object']).columns
-    for col in categorical_cols:
-        le = LabelEncoder()
-        data[col] = le.fit_transform(data[col])
+        # Preprocessing for Classification
+        st.write("### Preprocessing the data for classification...")
+        
+        # Handle missing values with intelligent imputation
+        for col in data.select_dtypes(include=np.number).columns:
+            data[col].fillna(data[col].mean(), inplace=True)
 
-    target_column = st.selectbox("Select Target Column for Classification:", data.columns)
-    if target_column:
-        X = data.drop(columns=[target_column])  # Features
-        y = data[target_column]  # Target
-    
-        # Split data
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        categorical_cols = data.select_dtypes(include=['object']).columns
+        for col in categorical_cols:
+            le = LabelEncoder()
+            data[col] = le.fit_transform(data[col])
 
-        # Scaling features
-        scaler = StandardScaler()
-        X_train = scaler.fit_transform(X_train)
-        X_test = scaler.transform(X_test)
+        target_column = st.selectbox("Select Target Column for Classification:", data.columns)
+        if target_column:
+            X = data.drop(columns=[target_column])  # Features
+            y = data[target_column]  # Target
+        
+            # Split data with stratification to maintain class balance
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
-        # Select Algorithms for Training
-        st.write("### Select Algorithms for Training and Evaluation")
-        selected_algorithms = st.multiselect(
-            "Choose one or more algorithms to train and evaluate:",
-            options=list(classifiers.keys())
-        )
+            # Scaling features
+            scaler = StandardScaler()
+            X_train = scaler.fit_transform(X_train)
+            X_test = scaler.transform(X_test)
 
-        if selected_algorithms:
-            results = []
-            for name in selected_algorithms:
-                model = classifiers[name]
-                st.write(f"### Training {name}")
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
+            # Select Algorithms for Training
+            st.write("### Select Algorithms for Training and Evaluation")
+            selected_algorithms = st.multiselect(
+                "Choose one or more algorithms to train and evaluate:",
+                options=list(classifiers.keys())
+            )
 
-                # Evaluate the model - Show Accuracy
-                accuracy = accuracy_score(y_test, y_pred)
-                precision = classification_report(y_test, y_pred, output_dict=True)[str(0)]['precision']
-                recall = classification_report(y_test, y_pred, output_dict=True)[str(0)]['recall']
-                f1 = f1_score(y_test, y_pred, average='weighted')
+            if selected_algorithms:
+                results = []
+                for name in selected_algorithms:
+                    model = classifiers[name]
+                    st.write(f"### Training {name}")
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+
+                    # Evaluate the model - Show Accuracy
+                    accuracy = accuracy_score(y_test, y_pred)
+                    precision = classification_report(y_test, y_pred, output_dict=True)[str(0)]['precision']
+                    recall = classification_report(y_test, y_pred, output_dict=True)[str(0)]['recall']
+                    f1 = f1_score(y_test, y_pred, average='weighted')
+                    
+                    results.append({
+                        "Model": name,
+                        "Accuracy": f"{accuracy * 100:.2f}%",
+                        "Precision": precision,
+                        "Recall": recall,
+                        "F1-Score": f1
+                    })
+                    
+                    # Confusion Matrix with Advanced Styling
+                    cm = confusion_matrix(y_test, y_pred)
+                    st.write(f"### {name} Confusion Matrix")
+                    
+                    fig, ax = plt.subplots(figsize=(10, 7))
+                    sns.heatmap(cm, annot=True, fmt='d', cmap='YlGnBu', 
+                                xticklabels=np.unique(y), yticklabels=np.unique(y), linewidths=1, linecolor='black')
+                    plt.title(f'{name} Confusion Matrix')
+                    plt.xlabel('Predicted')
+                    plt.ylabel('Actual')
+                    plt.xticks(rotation=45)
+                    plt.yticks(rotation=45)
+                    
+                    st.pyplot(fig)  # Display the plot using the created figure
+                    
+                    # Classification Report in the form of table
+                    st.write(f"### {name} Classification Report")
+                    clf_report = classification_report(y_test, y_pred)
+                    # Convert the classification report into a DataFrame and display as a table
+                    clf_report_df = pd.DataFrame.from_dict(classification_report(y_test, y_pred, output_dict=True)).transpose()
+                    st.table(clf_report_df)
+
+                # Display results in a table
+                results_df = pd.DataFrame(results)
+                st.write("### Classification Results:")
+                st.table(results_df)
                 
-                results.append({
-                    "Model": name,
-                    "Accuracy": f"{accuracy * 100:.2f}%",
-                    "Precision": precision,
-                    "Recall": recall,
-                    "F1-Score": f1
-                })
-                
-                # Confusion Matrix with Advanced Styling
-                cm = confusion_matrix(y_test, y_pred)
-                st.write(f"### {name} Confusion Matrix")
-                
-                fig, ax = plt.subplots(figsize=(10, 7))
-                sns.heatmap(cm, annot=True, fmt='d', cmap='YlGnBu', 
-                            xticklabels=np.unique(y), yticklabels=np.unique(y), linewidths=1, linecolor='black')
-                plt.title(f'{name} Confusion Matrix')
-                plt.xlabel('Predicted')
-                plt.ylabel('Actual')
-                plt.xticks(rotation=45)
-                plt.yticks(rotation=45)
-                
-                st.pyplot(fig)  # Display the plot using the created figure
-                
-                # Classification Report in the form of table
-                st.write(f"### {name} Classification Report")
-                clf_report = classification_report(y_test, y_pred)
-                # Convert the classification report into a DataFrame and display as a table
-                clf_report_df = pd.DataFrame.from_dict(classification_report(y_test, y_pred, output_dict=True)).transpose()
-                st.table(clf_report_df)
-
-            # Display results in a table
-            results_df = pd.DataFrame(results)
-            st.write("### Classification Results:")
-            st.table(results_df)
+    except Exception as e:
+        st.error(f"Error: {str(e)}")

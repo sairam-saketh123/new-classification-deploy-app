@@ -28,5 +28,7 @@ The goal of this project is to develop an interactive and robust Machine Learnin
 
 The primary objective of this app is to empower data scientists and machine learning practitioners by offering a streamlined workflow for classification modeling—from dataset exploration and model training to evaluation and deployment.
 
+<p> To view the project - https://automated-classification-data-analytics-platform.streamlit.app/ </p>
+
 
 </p>

@@ -3,6 +3,7 @@
 <p>
   <h3>Problem Statement</h3>
   The goal of this project is to develop an interactive and robust Machine Learning Classification App that allows users to:
+  
   <ul>
     <li>Upload datasets</li>
     <li>Preprocess the data</li>

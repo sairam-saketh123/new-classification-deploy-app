@@ -223,7 +223,7 @@ st.markdown(
 )
 
 # App Header
-st.title("Enhanced AutoML Classification Application")
+st.title("Model Prediction for Classification Problems")
 
 # Classifiers
 classifiers = {

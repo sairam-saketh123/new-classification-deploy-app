@@ -224,7 +224,7 @@ st.markdown(
 )
 
 # App Header
-st.title("Prediction for ML Classification Dataset")
+st.title("Automated Classification Data Analytics Platform")
 
 # Classifiers
 classifiers = {

@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, f1_score
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, GradientBoostingClassifier, ExtraTreesClassifier
+from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier, GradientBoostingClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
@@ -218,6 +218,7 @@ st.markdown(
     }
 
 </style>
+
     """,
     unsafe_allow_html=True
 )
@@ -233,7 +234,6 @@ classifiers = {
     "Logistic Regression": LogisticRegression(random_state=42),
     "Naive Bayes": GaussianNB(),
     "Gradient Boosting": GradientBoostingClassifier(n_estimators=100, random_state=42),
-    "Bagging Classifier": BaggingClassifier(DecisionTreeClassifier(), n_estimators=100, random_state=42),
     "Extra Trees": ExtraTreesClassifier(n_estimators=100, random_state=42)
 }
 
@@ -368,16 +368,46 @@ if uploaded_file:
                     st.pyplot(fig)  # Display the plot using the created figure
                     
                     # Classification Report in the form of table
-                    st.write(f"### {name} Classification Report")
-                    clf_report = classification_report(y_test, y_pred)
-                    # Convert the classification report into a DataFrame and display as a table
-                    clf_report_df = pd.DataFrame.from_dict(classification_report(y_test, y_pred, output_dict=True)).transpose()
-                    st.table(clf_report_df)
+                    if name == "Decision Tree":
+                        st.write(f"### {name} Classification Report")
+                        clf_report_dict = classification_report(y_test, y_pred, output_dict=True)
+                        clf_report_df = pd.DataFrame(clf_report_dict).transpose()
+                        st.dataframe(clf_report_df)
+                    
+                    # Feature Importance - Random Forest
+                    if name == "Random Forest":
+                        st.write(f"### {name} Feature Importance")
+                        importances = model.feature_importances_
+                        feature_names = X.columns
+                        importances_df = pd.DataFrame({'Feature': feature_names, 'Importance': importances})
+                        st.bar_chart(importances_df.sort_values(by='Importance', ascending=False))
+
+                    # Feature Importance - Extra Trees
+                    if name == "Extra Trees":
+                        st.write(f"### {name} Feature Importance")
+                        importances = model.feature_importances_
+                        feature_names = X.columns
+                        importances_df = pd.DataFrame({'Feature': feature_names, 'Importance': importances})
+                        st.bar_chart(importances_df.sort_values(by='Importance', ascending=False))
 
                 # Display results in a table
                 results_df = pd.DataFrame(results)
                 st.write("### Classification Results:")
                 st.table(results_df)
+                
+        if uploaded_file and selected_algorithms:  # Added condition to check if algorithms are selected
+            # Save the trained model to a file
+            st.write("### Download Trained Model")
+            model = classifiers[selected_algorithms[0]]
+            model.fit(X_train, y_train)
+            model_filename = 'trained_model.sav'
+            pd.to_pickle(model, model_filename)
+            st.download_button(
+                label="Download Trained Model",
+                data=open(model_filename, 'rb'),
+                file_name=model_filename,
+                mime='application/octet-stream'
+            )
                 
     except Exception as e:
         st.error(f"Error: {str(e)}")

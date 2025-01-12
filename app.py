@@ -223,7 +223,7 @@ st.markdown(
 )
 
 # App Header
-st.title("Model Prediction for Classification Problems")
+st.title("Prediction for ML Classification Dataset")
 
 # Classifiers
 classifiers = {

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, f1_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, GradientBoostingClassifier, ExtraTreesClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -238,10 +238,15 @@ classifiers = {
 }
 
 # File upload
-uploaded_file = st.file_uploader("Upload your dataset", type=['csv'])
+uploaded_file = st.file_uploader("Upload your dataset", type=['csv', 'xlsx'])
 
 if uploaded_file:
-    data = pd.read_csv(uploaded_file)
+    # Load the dataset
+    if uploaded_file.name.endswith('.csv'):
+        data = pd.read_csv(uploaded_file)
+    elif uploaded_file.name.endswith('.xlsx'):
+        data = pd.read_excel(uploaded_file)
+    
     st.write("### Dataset Loaded:")
     st.dataframe(data.head())
     
@@ -320,6 +325,7 @@ if uploaded_file:
         )
 
         if selected_algorithms:
+            results = []
             for name in selected_algorithms:
                 model = classifiers[name]
                 st.write(f"### Training {name}")
@@ -328,7 +334,17 @@ if uploaded_file:
 
                 # Evaluate the model - Show Accuracy
                 accuracy = accuracy_score(y_test, y_pred)
-                st.write(f"### {name} Accuracy: {accuracy * 100:.2f}%")
+                precision = classification_report(y_test, y_pred, output_dict=True)[str(0)]['precision']
+                recall = classification_report(y_test, y_pred, output_dict=True)[str(0)]['recall']
+                f1 = f1_score(y_test, y_pred, average='weighted')
+                
+                results.append({
+                    "Model": name,
+                    "Accuracy": f"{accuracy * 100:.2f}%",
+                    "Precision": precision,
+                    "Recall": recall,
+                    "F1-Score": f1
+                })
                 
                 # Confusion Matrix with Advanced Styling
                 cm = confusion_matrix(y_test, y_pred)
@@ -344,5 +360,15 @@ if uploaded_file:
                 plt.yticks(rotation=45)
                 
                 st.pyplot(fig)  # Display the plot using the created figure
-        else:
-            st.write("### Please select at least one algorithm to proceed.")
+                
+                # Classification Report in the form of table
+                st.write(f"### {name} Classification Report")
+                clf_report = classification_report(y_test, y_pred)
+                # Convert the classification report into a DataFrame and display as a table
+                clf_report_df = pd.DataFrame.from_dict(classification_report(y_test, y_pred, output_dict=True)).transpose()
+                st.table(clf_report_df)
+
+            # Display results in a table
+            results_df = pd.DataFrame(results)
+            st.write("### Classification Results:")
+            st.table(results_df)

@@ -5,12 +5,14 @@
   The goal of this project is to develop an interactive and robust Machine Learning Classification App that allows users to:
   
   <ul>
+    
     <li>Upload datasets</li>
     <li>Preprocess the data</li>
     <li>Select from various classification models</li>
     <li>Train the models</li>
     <li>Evaluate their performance</li>
     <li>Download the trained model</li>
+    
   </ul>
   The app provides visual insights through data visualization, feature importance analysis, confusion matrices, and classification reports to guide users in making informed decisions based on their dataset.
 </p>
